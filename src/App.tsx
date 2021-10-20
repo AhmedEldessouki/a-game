@@ -1,10 +1,13 @@
 import React from 'react'
 import './App.css'
+import Grid from './components/grid/grid'
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header" />
+      <main className="App-header">
+        <Grid />
+      </main>
     </div>
   )
 }
