@@ -46,44 +46,17 @@ function draw(
 }
 
 type SpawnAbleAnimals = 'sheep' | 'wolf' | 'bear'
-const animalsOutside: {
-  type: SpawnAbleAnimals
-  location: {latitude: number; longitude: number}
-  createdAt: number
-}[] = []
-const spawn = () => {
-  // ? Sheep s > 0 && s <= 100
-  // ? Wolf w > 101 && w <= 110 Radius: 15%
-  // ? Bear b > 111 && b <= 115 Radius: 20%
-  const num = faker.datatype.number(115)
-  const animal: {
-    type: SpawnAbleAnimals
-    location: {latitude: number; longitude: number}
-    createdAt: number
-  } = {
-    type: 'sheep',
-    location: {
-      longitude: Number(faker.address.latitude(500, 0.1)),
-      latitude: Number(faker.address.longitude(500, 0.1)),
-    },
-    createdAt: Date.now(),
-  }
-  if (num < 101) {
-    animal.type = 'sheep'
-  } else if (num < 111) {
-    animal.type = 'wolf'
-  } else {
-    animal.type = 'bear'
-  }
-  // setAnimals([...animals, animal])
-  animalsOutside.push(animal)
-  return animal
-}
 
 function Grid({
   animals,
+  history,
 }: {
   animals: {
+    type: SpawnAbleAnimals
+    location: {latitude: number; longitude: number}
+    createdAt: number
+  }[]
+  history: {
     type: SpawnAbleAnimals
     location: {latitude: number; longitude: number}
     createdAt: number
@@ -124,6 +97,7 @@ function Grid({
         animal.type,
       ),
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(animals)])
 
   React.useLayoutEffect(() => {
@@ -151,6 +125,19 @@ function Grid({
         {animals.map((item, i) => (
           // eslint-disable-next-line react/no-array-index-key
           <div key={item.createdAt * (i + 1)}>{JSON.stringify(item)}</div>
+        ))}
+      </HistoryContainer>
+      <HistoryContainer>
+        {history.map(({type, location, createdAt}, i) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <React.Fragment key={createdAt * (i + 10)}>
+            <h2>{type}</h2>
+            <div>
+              <h3>{location.latitude}</h3>
+              <h3>{location.longitude}</h3>
+            </div>
+            <span>{createdAt}</span>
+          </React.Fragment>
         ))}
       </HistoryContainer>
     </div>

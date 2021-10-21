@@ -16,6 +16,11 @@ const HistoryContainer = styled.div`
 `
 
 type SpawnAbleAnimals = 'sheep' | 'wolf' | 'bear'
+type AnimalsType = {
+  type: SpawnAbleAnimals
+  location: {latitude: number; longitude: number}
+  createdAt: number
+}[]
 const spawn = () => {
   // ? Sheep s > 0 && s <= 100
   // ? Wolf w > 101 && w <= 110 Radius: 15%
@@ -56,30 +61,43 @@ function Oracle() {
       createdAt: number
     }[]
   >([])
-  const [history, setHistory] = React.useState<
+  const historyRef = React.useRef<
     {
       type: SpawnAbleAnimals
       location: {latitude: number; longitude: number}
       createdAt: number
     }[]
   >([])
-  const animalsRef = React.useRef<
-    {
-      type: SpawnAbleAnimals
-      location: {latitude: number; longitude: number}
-      createdAt: number
-    }[]
-  >([])
+  const animalsRef = React.useRef<AnimalsType>([])
+  const redZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
+  const blueZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
 
   React.useLayoutEffect(() => {
     setInterval(() => {
-      animalsRef.current.shift()
-      console.log(animalsRef.current.length)
+      const removedAnimal = animalsRef.current.shift()
+      if (removedAnimal) {
+        if (removedAnimal.type === 'wolf') {
+          redZonesRef.current.shift()
+        } else if (removedAnimal.type === 'bear') {
+          blueZonesRef.current.shift()
+        }
+        historyRef.current.push(removedAnimal)
+        console.log(
+          animalsRef.current.length,
+          redZonesRef.current.length,
+          blueZonesRef.current.length,
+        )
+      }
     }, 61000)
   }, [])
   React.useLayoutEffect(() => {
     setInterval(() => {
       const animal = spawn()
+      if (animal.type === 'wolf') {
+        redZonesRef.current.push(animal.location)
+      } else if (animal.type === 'bear') {
+        blueZonesRef.current.push(animal.location)
+      }
       animalsRef.current.push(animal)
       console.log(`spawn`, animalsRef.current.length)
     }, 1000)
@@ -100,20 +118,7 @@ function Oracle() {
   ${new Date().getSeconds().toString().padStart(2, '0')}`}
       </h1>
       {/* <h1>Current: {time}</h1> */}
-      <Grid animals={animalsRef.current} />
-      {/* <HistoryContainer>
-        {history.map(({type, location, createdAt}, i) => (
-          //   eslint-disable-next-line react/no-array-index-key
-          <React.Fragment key={createdAt * (i + 1)}>
-            <h2>{type}</h2>
-            <div>
-              <h3>{location.latitude}</h3>
-              <h3>{location.longitude}</h3>
-            </div>
-            <span>{createdAt}</span>
-          </React.Fragment>
-        ))}
-      </HistoryContainer> */}
+      <Grid animals={animalsRef.current} history={historyRef.current} />
     </div>
   )
 }
