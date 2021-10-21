@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import faker from 'faker'
 
 const Canvas = styled.canvas`
   background: #1eff61a1;
@@ -13,7 +12,7 @@ const HistoryContainer = styled.div`
   height: 500px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   overflow: auto;
 `

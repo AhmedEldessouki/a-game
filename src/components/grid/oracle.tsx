@@ -1,19 +1,6 @@
 import React from 'react'
-import styled from '@emotion/styled'
 import faker from 'faker'
 import Grid from './grid'
-
-const HistoryContainer = styled.div`
-  background: #1eff61a1;
-  border-radius: 2px;
-  color: black;
-  height: 500px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  overflow: auto;
-`
 
 type SpawnAbleAnimals = 'sheep' | 'wolf' | 'bear'
 type AnimalsType = {
@@ -45,15 +32,9 @@ const spawn = () => {
   } else {
     animal.type = 'bear'
   }
-  // setAnimals([...animals, animal])
   return animal
 }
 function Oracle() {
-  const [time, setTime] = React.useState(`${new Date()
-    .getHours()
-    .toString()
-    .padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}:
-  ${new Date().getSeconds().toString().padStart(2, '0')}`)
   const [animals, setAnimals] = React.useState<
     {
       type: SpawnAbleAnimals
@@ -82,11 +63,6 @@ function Oracle() {
           blueZonesRef.current.shift()
         }
         historyRef.current.push(removedAnimal)
-        console.log(
-          animalsRef.current.length,
-          redZonesRef.current.length,
-          blueZonesRef.current.length,
-        )
       }
     }, 61000)
   }, [])
@@ -99,7 +75,6 @@ function Oracle() {
         blueZonesRef.current.push(animal.location)
       }
       animalsRef.current.push(animal)
-      console.log(`spawn`, animalsRef.current.length)
     }, 1000)
   }, [])
   React.useEffect(() => {
@@ -117,7 +92,6 @@ function Oracle() {
           .padStart(2, '0')}:
   ${new Date().getSeconds().toString().padStart(2, '0')}`}
       </h1>
-      {/* <h1>Current: {time}</h1> */}
       <Grid animals={animalsRef.current} history={historyRef.current} />
     </div>
   )
