@@ -124,7 +124,7 @@ function Grid({
         animal.type,
       ),
     )
-  }, [animals])
+  }, [JSON.stringify(animals)])
 
   React.useLayoutEffect(() => {
     setInterval(
@@ -148,22 +148,10 @@ function Grid({
       <h1>Current: {time}</h1>
       <Canvas width="500" height="500" ref={canvasRef} />
       <HistoryContainer>
-        {animals.map((item, i) => {
-          const ctx = canvasRef.current?.getContext('2d')
-          if (ctx) {
-            draw(
-              ctx,
-              500,
-              item.location.latitude,
-              item.location.longitude,
-              item.type,
-            )
-          }
-          return (
-            // eslint-disable-next-line react/no-array-index-key
-            <div key={item.createdAt * (i + 1)}>{JSON.stringify(item)}</div>
-          )
-        })}
+        {animals.map((item, i) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={item.createdAt * (i + 1)}>{JSON.stringify(item)}</div>
+        ))}
       </HistoryContainer>
     </div>
   )
