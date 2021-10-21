@@ -53,20 +53,27 @@ function Oracle() {
   const redZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
   const blueZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     setInterval(() => {
-      const removedAnimal = animalsRef.current.shift()
-      if (removedAnimal) {
-        if (removedAnimal.type === 'wolf') {
-          redZonesRef.current.shift()
-        } else if (removedAnimal.type === 'bear') {
-          blueZonesRef.current.shift()
+      if (Date.now() - 60000 - animalsRef.current[0].createdAt <= 0) {
+        const removedAnimal = animalsRef.current.shift()
+        if (removedAnimal) {
+          console.log(
+            Date.now() - 61000 === removedAnimal.createdAt,
+            Date.now() - 61000 - removedAnimal.createdAt,
+          )
+          if (removedAnimal.type === 'wolf') {
+            redZonesRef.current.shift()
+          } else if (removedAnimal.type === 'bear') {
+            blueZonesRef.current.shift()
+          }
+          historyRef.current.push(removedAnimal)
         }
-        historyRef.current.push(removedAnimal)
       }
-    }, 61000)
+    }, 60000)
   }, [])
-  React.useLayoutEffect(() => {
+
+  React.useEffect(() => {
     setInterval(() => {
       const animal = spawn()
       if (animal.type === 'wolf') {
