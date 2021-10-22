@@ -41,70 +41,19 @@ const spawn = () => {
 }
 function Oracle() {
   const historyRef = React.useRef<AnimalsType>([])
-  const animalsRef = React.useRef<AnimalsType>([])
-  const redZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
-  const blueZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
+  const sheepsRef = React.useRef<AnimalsType>([])
+  const redZonesRef = React.useRef<AnimalsType>([])
+  const blueZonesRef = React.useRef<AnimalsType>([])
 
   React.useEffect(() => {
     setInterval(() => {
       const animal = spawn()
-
       if (animal.type === 'wolf') {
-        for (let i = 0; i < blueZonesRef.current.length; i += 1) {
-          const blueZone = blueZonesRef.current[i]
-          for (let x = 0; x < animalsRef.current.length; x += 1) {
-            const {type, location} = animalsRef.current[x]
-            if (type === 'wolf') {
-              if (
-                location.latitude <= blueZone.latitude + 500 * 0.2 &&
-                location.latitude >= blueZone.latitude - 500 * 0.2 &&
-                location.longitude <= blueZone.longitude + 500 * 0.2 &&
-                location.longitude >= blueZone.longitude - 500 * 0.2
-              ) {
-                console.log(`A Bear Has Eaten a ${type}`)
-                const removedAnimal = animalsRef.current.splice(x, 1)
-                const wolfIndex = redZonesRef.current.findIndex(
-                  ({longitude, latitude}) =>
-                    location.latitude === latitude &&
-                    location.longitude === longitude,
-                )
-                if (wolfIndex > -1) {
-                  console.log(`The Wolf have Been Removed`)
-                  redZonesRef.current.splice(wolfIndex, 1)
-                }
-                historyRef.current.push(removedAnimal[0])
-                return
-              }
-            }
-          }
-        }
-        // animal.type = ''
-      } else if (animal.type === 'sheep') {
-        for (let i = 0; i < redZonesRef.current.length; i += 1) {
-          const redZone = redZonesRef.current[i]
-          for (let x = 0; x < animalsRef.current.length; x += 1) {
-            const {type, location} = animalsRef.current[x]
-            if (type === 'sheep') {
-              if (
-                location.latitude <= redZone.latitude + 500 * 0.15 &&
-                location.latitude >= redZone.latitude - 500 * 0.15 &&
-                location.longitude <= redZone.longitude + 500 * 0.15 &&
-                location.longitude >= redZone.longitude - 500 * 0.15
-              ) {
-                console.log(`A Wolf Has Eaten a ${type}`)
-                const removedAnimal = animalsRef.current.splice(x, 1)
-                historyRef.current.push(removedAnimal[0])
-                return
-              }
-            }
-          }
-        }
-      }
-      animalsRef.current.push(animal)
-      if (animal.type === 'wolf') {
-        redZonesRef.current.push(animal.location)
+        redZonesRef.current.push(animal)
       } else if (animal.type === 'bear') {
-        blueZonesRef.current.push(animal.location)
+        blueZonesRef.current.push(animal)
+      } else {
+        sheepsRef.current.push(animal)
       }
     }, 1000)
   }, [])
@@ -120,7 +69,7 @@ function Oracle() {
   ${new Date().getSeconds().toString().padStart(2, '0')}`}
       </h1>
       <Grid
-        animals={animalsRef.current}
+        animals={sheepsRef.current}
         wolfs={redZonesRef.current}
         bears={blueZonesRef.current}
         history={historyRef.current}
@@ -131,3 +80,4 @@ function Oracle() {
 }
 
 export default Oracle
+export type {AnimalsType}
