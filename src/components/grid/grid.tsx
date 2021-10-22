@@ -150,6 +150,9 @@ function Grid({
           bears.shift()
         }
         history.push(removedAnimal)
+        if (history.length > 60) {
+          history.splice(0, history.length - 61)
+        }
       }
     }
   }, [
