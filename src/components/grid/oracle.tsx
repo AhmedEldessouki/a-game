@@ -7,6 +7,7 @@ type AnimalsType = {
   type: SpawnAbleAnimals
   location: {latitude: number; longitude: number}
   createdAt: number
+  color: string
 }[]
 const spawn = () => {
   // ? Sheep s > 0 && s <= 100
@@ -17,6 +18,7 @@ const spawn = () => {
     type: SpawnAbleAnimals
     location: {latitude: number; longitude: number}
     createdAt: number
+    color: string
   } = {
     type: 'sheep',
     location: {
@@ -24,64 +26,29 @@ const spawn = () => {
       latitude: Number(faker.address.longitude(500, 0.1)),
     },
     createdAt: Date.now(),
+    color: 'white',
   }
   if (num < 101) {
-    animal.type = 'sheep'
+    // ? Defaulted
   } else if (num < 111) {
     animal.type = 'wolf'
+    animal.color = 'red'
   } else {
     animal.type = 'bear'
+    animal.color = 'blue'
   }
   return animal
 }
 function Oracle() {
-  const [animals, setAnimals] = React.useState<
-    {
-      type: SpawnAbleAnimals
-      location: {latitude: number; longitude: number}
-      createdAt: number
-    }[]
-  >([])
-  const historyRef = React.useRef<
-    {
-      type: SpawnAbleAnimals
-      location: {latitude: number; longitude: number}
-      createdAt: number
-    }[]
-  >([])
+  const historyRef = React.useRef<AnimalsType>([])
   const animalsRef = React.useRef<AnimalsType>([])
   const redZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
   const blueZonesRef = React.useRef<{latitude: number; longitude: number}[]>([])
 
   React.useEffect(() => {
     setInterval(() => {
-      if (Date.now() - 60000 - animalsRef.current[0].createdAt <= 0) {
-        const removedAnimal = animalsRef.current.shift()
-        if (removedAnimal) {
-          console.log(
-            Date.now() - 61000 === removedAnimal.createdAt,
-            Date.now() - 61000 - removedAnimal.createdAt,
-          )
-          if (removedAnimal.type === 'wolf') {
-            redZonesRef.current.shift()
-          } else if (removedAnimal.type === 'bear') {
-            blueZonesRef.current.shift()
-          }
-          historyRef.current.push(removedAnimal)
-        }
-      }
-    }, 60000)
-  }, [])
-
-  React.useEffect(() => {
-    setInterval(() => {
       const animal = spawn()
-      if (animal.type === 'wolf') {
-        redZonesRef.current.push(animal.location)
-      } else if (animal.type === 'bear') {
-        blueZonesRef.current.push(animal.location)
-      }
-      animalsRef.current.push(animal)
+
       if (animal.type === 'wolf') {
         for (let i = 0; i < blueZonesRef.current.length; i += 1) {
           const blueZone = blueZonesRef.current[i]
@@ -106,6 +73,7 @@ function Oracle() {
                   redZonesRef.current.splice(wolfIndex, 1)
                 }
                 historyRef.current.push(removedAnimal[0])
+                return
               }
             }
           }
@@ -126,17 +94,20 @@ function Oracle() {
                 console.log(`A Wolf Has Eaten a ${type}`)
                 const removedAnimal = animalsRef.current.splice(x, 1)
                 historyRef.current.push(removedAnimal[0])
+                return
               }
             }
           }
         }
       }
+      animalsRef.current.push(animal)
+      if (animal.type === 'wolf') {
+        redZonesRef.current.push(animal.location)
+      } else if (animal.type === 'bear') {
+        blueZonesRef.current.push(animal.location)
+      }
     }, 1000)
   }, [])
-  React.useEffect(() => {
-    if (JSON.stringify(animals) === JSON.stringify(animalsRef.current)) return
-    setAnimals([...animalsRef.current])
-  }, [animals])
 
   return (
     <div>
@@ -148,7 +119,13 @@ function Oracle() {
           .padStart(2, '0')}:
   ${new Date().getSeconds().toString().padStart(2, '0')}`}
       </h1>
-      <Grid animals={animalsRef.current} history={historyRef.current} />
+      <Grid
+        animals={animalsRef.current}
+        wolfs={redZonesRef.current}
+        bears={blueZonesRef.current}
+        history={historyRef.current}
+      />
+      <Grid animals={historyRef.current} />
     </div>
   )
 }

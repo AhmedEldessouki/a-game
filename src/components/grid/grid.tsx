@@ -22,6 +22,7 @@ function draw(
   latitude: number,
   longitude: number,
   text: string,
+  color: string,
 ) {
   let radius = 0
   if (text === 'wolf') {
@@ -34,7 +35,7 @@ function draw(
 
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = `white`
+  ctx.fillStyle = color
   ctx.font = `13px sans-serif`
   ctx.fillText(text, longitude, latitude)
   ctx.ellipse(longitude, latitude, radius, radius, Math.PI / 4, 0, 2 * Math.PI)
@@ -48,17 +49,29 @@ type SpawnAbleAnimals = 'sheep' | 'wolf' | 'bear'
 
 function Grid({
   animals,
+  wolfs,
+  bears,
   history,
 }: {
   animals: {
     type: SpawnAbleAnimals
     location: {latitude: number; longitude: number}
     createdAt: number
+    color: string
   }[]
-  history: {
+  wolfs?: {
+    latitude: number
+    longitude: number
+  }[]
+  bears?: {
+    latitude: number
+    longitude: number
+  }[]
+  history?: {
     type: SpawnAbleAnimals
     location: {latitude: number; longitude: number}
     createdAt: number
+    color: string
   }[]
 }) {
   const [time, setTime] = React.useState(`${new Date()
@@ -94,6 +107,7 @@ function Grid({
         animal.location.latitude,
         animal.location.longitude,
         animal.type,
+        animal.color,
       ),
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,6 +130,35 @@ function Grid({
     )
   }, [])
 
+  React.useEffect(() => {
+    if (!history) return
+    if (!bears) return
+    if (!wolfs) return
+    if (animals.length <= 0) return
+    for (let i = 0; i < animals.length; i += 1) {
+      if (Date.now() - 60000 - animals[i].createdAt < 0) return
+      const removedAnimal = animals.shift()
+      if (removedAnimal) {
+        console.log(
+          `${removedAnimal.type} Is Dead`,
+          Date.now() - 60000 - removedAnimal.createdAt > 0,
+          Date.now() - 60000 - removedAnimal.createdAt,
+        )
+        if (removedAnimal.type === 'wolf') {
+          wolfs.shift()
+        } else if (removedAnimal.type === 'bear') {
+          bears.shift()
+        }
+        history.push(removedAnimal)
+      }
+    }
+  }, [
+    JSON.stringify(animals),
+    JSON.stringify(bears),
+    JSON.stringify(history),
+    JSON.stringify(wolfs),
+  ])
+
   return (
     <div>
       <h1>Current: {time}</h1>
@@ -127,17 +170,18 @@ function Grid({
         ))}
       </HistoryContainer>
       <HistoryContainer>
-        {history.map(({type, location, createdAt}, i) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <React.Fragment key={createdAt * (i + 10)}>
-            <h2>{type}</h2>
-            <div>
-              <h3>{location.latitude}</h3>
-              <h3>{location.longitude}</h3>
-            </div>
-            <span>{createdAt}</span>
-          </React.Fragment>
-        ))}
+        {history &&
+          history.map(({type, location, createdAt}, i) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <React.Fragment key={createdAt * (i + 10)}>
+              <h2>{type}</h2>
+              <div>
+                <h3>{location.latitude}</h3>
+                <h3>{location.longitude}</h3>
+              </div>
+              <span>{createdAt}</span>
+            </React.Fragment>
+          ))}
       </HistoryContainer>
     </div>
   )
