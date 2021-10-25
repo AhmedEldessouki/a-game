@@ -33,10 +33,10 @@ const spawn = () => {
     // ? Defaulted
   } else if (num < 111) {
     animal.type = 'wolf'
-    animal.color = 'red'
+    animal.color = '#ff0035'
   } else {
     animal.type = 'bear'
-    animal.color = 'blue'
+    animal.color = ' 	#1b45d7'
   }
   return animal
 }
@@ -75,7 +75,6 @@ function Oracle() {
         bears={blueZonesRef.current}
         history={historyRef.current}
       />
-      <Grid animals={historyRef.current} />
     </div>
   )
 }

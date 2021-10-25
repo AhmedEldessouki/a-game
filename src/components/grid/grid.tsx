@@ -12,6 +12,8 @@ const HistoryContainer = styled.div`
   background: #111f11a1;
   border-radius: 2px;
   height: 500px;
+  margin: 5px 0;
+  padding: 15px 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -77,8 +79,6 @@ function Card({
   )
 }
 
-const CardMemo = React.memo(Card)
-
 function draw(
   ctx: CanvasRenderingContext2D,
   squareLength: number,
@@ -95,6 +95,8 @@ function draw(
   }
   ctx.save()
   ctx.beginPath()
+
+  ctx.strokeStyle = `${color}a2`
 
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -296,11 +298,10 @@ function Grid({
     <div>
       <h1>Current: {time}</h1>
       <Canvas width="500" height="500" ref={canvasRef} />
-
       <HistoryContainer>
         {history &&
           history.map(({type, location, createdAt, id}, i) => (
-            <CardMemo
+            <Card
               key={id}
               type={type}
               latitude={location.latitude}
