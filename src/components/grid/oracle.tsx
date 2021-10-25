@@ -8,8 +8,9 @@ type AnimalsType = {
   location: {latitude: number; longitude: number}
   createdAt: number
   color: string
-  id?: string
+  id: string
 }[]
+
 const spawn = () => {
   // ? Sheep s > 0 && s <= 100
   // ? Wolf w > 101 && w <= 110 Radius: 15%
@@ -20,6 +21,7 @@ const spawn = () => {
     location: {latitude: number; longitude: number}
     createdAt: number
     color: string
+    id: string
   } = {
     type: 'sheep',
     location: {
@@ -28,6 +30,7 @@ const spawn = () => {
     },
     createdAt: Date.now(),
     color: 'white',
+    id: faker.datatype.uuid(),
   }
   if (num < 101) {
     // ? Defaulted
@@ -36,19 +39,25 @@ const spawn = () => {
     animal.color = '#ff0035'
   } else {
     animal.type = 'bear'
-    animal.color = ' 	#1b45d7'
+    animal.color = '#1b45d7'
   }
   return animal
 }
+
 function Oracle() {
   const historyRef = React.useRef<AnimalsType>([])
   const sheepsRef = React.useRef<AnimalsType>([])
   const redZonesRef = React.useRef<AnimalsType>([])
   const blueZonesRef = React.useRef<AnimalsType>([])
+  const combined = React.useRef<AnimalsType>([])
 
   React.useEffect(() => {
     setInterval(() => {
       const animal = spawn()
+      if (combined.current.length > 20) {
+        combined.current.splice(19, combined.current.length - 1)
+      }
+      combined.current.unshift(animal)
       if (animal.type === 'wolf') {
         redZonesRef.current.push(animal)
       } else if (animal.type === 'bear') {
@@ -74,6 +83,7 @@ function Oracle() {
         wolfs={redZonesRef.current}
         bears={blueZonesRef.current}
         history={historyRef.current}
+        combined={combined.current}
       />
     </div>
   )

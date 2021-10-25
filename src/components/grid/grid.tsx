@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import {keyframes} from '@emotion/react'
-import fake from 'faker'
 import type {AnimalsType} from './oracle'
 
 const Canvas = styled.canvas`
@@ -44,7 +43,7 @@ const SubHistoryContainer = styled.div`
   flex-wrap: wrap;
   justify-content: space-evenly;
   align-items: center;
-  h2 {
+  h3 {
     margin-top: 0;
   }
   animation: ${enterAnimation} 300ms ease;
@@ -64,16 +63,16 @@ function Card({
   return (
     <SubHistoryContainer>
       <span>
-        <h2>Died Animal</h2>
-        {type}.
+        <h3> Animal</h3>
+        {type}
       </span>
       <div>
         <span>
-          <h2>Location</h2>({latitude}, {longitude})
+          <h3>Location</h3>({latitude}, {longitude})
         </span>
       </div>
       <span>
-        <h2>Created At</h2> {createdAt}
+        <h3>Created At</h3> {createdAt}
       </span>
     </SubHistoryContainer>
   )
@@ -115,11 +114,13 @@ function Grid({
   wolfs,
   bears,
   history,
+  combined,
 }: {
   animals: AnimalsType
-  wolfs?: AnimalsType
-  bears?: AnimalsType
-  history?: AnimalsType
+  wolfs: AnimalsType
+  bears: AnimalsType
+  history: AnimalsType
+  combined: AnimalsType
 }) {
   const [time, setTime] = React.useState(`${new Date()
     .getHours()
@@ -205,6 +206,7 @@ function Grid({
     if (!bears) return
     if (!wolfs) return
     if (sheeps.length <= 0) return
+
     for (
       let i = 0;
       i < (sheeps.length || bears.length || wolfs.length);
@@ -215,7 +217,7 @@ function Grid({
         const removedAnimal = sheeps.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.unshift({...removedAnimal, id: fake.datatype.uuid()})
+          history.unshift({...removedAnimal})
         }
       }
       if (i < wolfs.length) {
@@ -223,7 +225,7 @@ function Grid({
         const removedAnimal = wolfs.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.unshift({...removedAnimal, id: fake.datatype.uuid()})
+          history.unshift({...removedAnimal})
         }
       }
       if (i < bears.length) {
@@ -231,7 +233,7 @@ function Grid({
         const removedAnimal = bears.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.unshift({...removedAnimal, id: fake.datatype.uuid()})
+          history.unshift({...removedAnimal})
         }
       }
       if (history.length > 60) {
@@ -248,69 +250,79 @@ function Grid({
   React.useEffect(() => {
     if (!history) return
     if (!wolfs) return
+
     for (let i = 0; i < wolfs.length; i += 1) {
       const wolf = wolfs[i]
       for (let x = 0; x < sheeps.length; x += 1) {
         const {type, location} = sheeps[x]
-        if (type === 'sheep') {
-          if (
-            location.latitude <= wolf.location.latitude + 500 * 0.15 &&
-            location.latitude >= wolf.location.latitude - 500 * 0.15 &&
-            location.longitude <= wolf.location.longitude + 500 * 0.15 &&
-            location.longitude >= wolf.location.longitude - 500 * 0.15
-          ) {
-            const removedAnimal = sheeps.splice(x, 1)
-            wolf.location = removedAnimal[0].location
-            history.unshift({...removedAnimal[0], id: fake.datatype.uuid()})
-            console.log(`A Wolf Has Eaten a ${type}`)
-            break
-          }
+        if (
+          location.latitude <= wolf.location.latitude + 500 * 0.15 &&
+          location.latitude >= wolf.location.latitude - 500 * 0.15 &&
+          location.longitude <= wolf.location.longitude + 500 * 0.15 &&
+          location.longitude >= wolf.location.longitude - 500 * 0.15
+        ) {
+          const removedAnimal = sheeps.splice(x, 1)
+          wolf.location = removedAnimal[0].location
+          history.unshift({...removedAnimal[0]})
+          console.log(`A Wolf Has Eaten a ${type}`)
+          break
         }
       }
     }
-  }, [JSON.stringify(sheeps), JSON.stringify(wolfs)])
+  }, [JSON.stringify(sheeps), JSON.stringify(history), JSON.stringify(wolfs)])
 
   React.useEffect(() => {
     if (!bears) return
     if (!wolfs) return
     if (!history) return
+
     for (let i = 0; i < bears.length; i += 1) {
       const bear = bears[i]
       for (let x = 0; x < wolfs.length; x += 1) {
         const {type, location} = wolfs[x]
-        if (type === 'wolf') {
-          if (
-            location.latitude <= bear.location.latitude + 500 * 0.2 &&
-            location.latitude >= bear.location.latitude - 500 * 0.2 &&
-            location.longitude <= bear.location.longitude + 500 * 0.2 &&
-            location.longitude >= bear.location.longitude - 500 * 0.2
-          ) {
-            const removedAnimal = wolfs.splice(x, 1)
-            bear.location = removedAnimal[0].location
-            history.unshift({...removedAnimal[0], id: fake.datatype.uuid()})
-            console.log(`A Bear Has Eaten a ${type}`)
-            break
-          }
+        if (
+          location.latitude <= bear.location.latitude + 500 * 0.2 &&
+          location.latitude >= bear.location.latitude - 500 * 0.2 &&
+          location.longitude <= bear.location.longitude + 500 * 0.2 &&
+          location.longitude >= bear.location.longitude - 500 * 0.2
+        ) {
+          const removedAnimal = wolfs.splice(x, 1)
+          bear.location = removedAnimal[0].location
+          history.unshift({...removedAnimal[0]})
+          console.log(`A Bear Has Eaten a ${type}`)
+          break
         }
       }
     }
-  }, [JSON.stringify(bears), JSON.stringify(wolfs)])
+  }, [JSON.stringify(bears), JSON.stringify(history), JSON.stringify(wolfs)])
 
   return (
     <div>
       <h1>Current: {time}</h1>
       <Canvas width="500" height="500" ref={canvasRef} />
       <HistoryContainer>
-        {history &&
-          history.map(({type, location, createdAt, id}, i) => (
-            <Card
-              key={id}
-              type={type}
-              latitude={location.latitude}
-              longitude={location.longitude}
-              createdAt={createdAt}
-            />
-          ))}
+        <h2>Died Animals</h2>
+        {history.map(({type, location, createdAt, id}, i) => (
+          <Card
+            key={id}
+            type={type}
+            latitude={location.latitude}
+            longitude={location.longitude}
+            createdAt={createdAt}
+          />
+        ))}
+      </HistoryContainer>
+      <HistoryContainer>
+        <h2>Spawned Animals</h2>
+        {combined.map(({type, location, createdAt, id}, i) => (
+          <Card
+            key={id}
+            type={type}
+            latitude={location.latitude}
+            longitude={location.longitude}
+            createdAt={createdAt}
+          />
+        ))}
       </HistoryContainer>
     </div>
   )
