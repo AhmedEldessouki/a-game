@@ -259,15 +259,16 @@ function Grid({
             location.longitude <= wolf.location.longitude + 500 * 0.15 &&
             location.longitude >= wolf.location.longitude - 500 * 0.15
           ) {
-            console.log(`A Wolf Has Eaten a ${type}`)
             const removedAnimal = sheeps.splice(x, 1)
             wolf.location = removedAnimal[0].location
             history.unshift({...removedAnimal[0], id: fake.datatype.uuid()})
+            console.log(`A Wolf Has Eaten a ${type}`)
+            break
           }
         }
       }
     }
-  }, [JSON.stringify(sheeps), JSON.stringify(history), JSON.stringify(wolfs)])
+  }, [JSON.stringify(sheeps), JSON.stringify(wolfs)])
 
   React.useEffect(() => {
     if (!bears) return
@@ -284,15 +285,16 @@ function Grid({
             location.longitude <= bear.location.longitude + 500 * 0.2 &&
             location.longitude >= bear.location.longitude - 500 * 0.2
           ) {
-            console.log(`A Bear Has Eaten a ${type}`)
             const removedAnimal = wolfs.splice(x, 1)
             bear.location = removedAnimal[0].location
             history.unshift({...removedAnimal[0], id: fake.datatype.uuid()})
+            console.log(`A Bear Has Eaten a ${type}`)
+            break
           }
         }
       }
     }
-  }, [JSON.stringify(bears), JSON.stringify(history), JSON.stringify(wolfs)])
+  }, [JSON.stringify(bears), JSON.stringify(wolfs)])
 
   return (
     <div>
