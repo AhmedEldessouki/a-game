@@ -117,8 +117,7 @@ function Grid({
         ),
       )
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(sheeps)])
+  }, [JSON.stringify(sheeps), JSON.stringify(bears), JSON.stringify(wolfs)])
 
   React.useLayoutEffect(() => {
     setInterval(
@@ -176,7 +175,7 @@ function Grid({
           console.log(`${removedAnimal.type} Is Dead`)
           history.push(removedAnimal)
           if (history.length > 60) {
-            history.splice(0, history.length - 61)
+            history.splice(59, history.length - 1)
           }
         }
       }
@@ -203,7 +202,8 @@ function Grid({
           ) {
             console.log(`A Wolf Has Eaten a ${type}`)
             const removedAnimal = sheeps.splice(x, 1)
-            history.push(removedAnimal[0])
+            wolf.location = removedAnimal[0].location
+            history.unshift(removedAnimal[0])
           }
         }
       }
@@ -227,12 +227,14 @@ function Grid({
           ) {
             console.log(`A Bear Has Eaten a ${type}`)
             const removedAnimal = wolfs.splice(x, 1)
-            history.push(removedAnimal[0])
+            bear.location = removedAnimal[0].location
+            history.unshift(removedAnimal[0])
           }
         }
       }
     }
   }, [JSON.stringify(bears), JSON.stringify(history), JSON.stringify(wolfs)])
+
   return (
     <div>
       <h1>Current: {time}</h1>
