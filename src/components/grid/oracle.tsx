@@ -8,6 +8,7 @@ type AnimalsType = {
   location: {latitude: number; longitude: number}
   createdAt: number
   color: string
+  id?: string
 }[]
 const spawn = () => {
   // ? Sheep s > 0 && s <= 100

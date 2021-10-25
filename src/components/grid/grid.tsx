@@ -1,5 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
+import {keyframes} from '@emotion/react'
+import fake from 'faker'
 import type {AnimalsType} from './oracle'
 
 const Canvas = styled.canvas`
@@ -7,9 +9,8 @@ const Canvas = styled.canvas`
   border-radius: 2px;
 `
 const HistoryContainer = styled.div`
-  background: #1eff61a1;
+  background: #111f11a1;
   border-radius: 2px;
-  color: black;
   height: 500px;
   display: flex;
   flex-direction: column;
@@ -17,6 +18,67 @@ const HistoryContainer = styled.div`
   align-items: center;
   overflow: auto;
 `
+
+const enterAnimation = keyframes`
+from {
+  transform: translateX(-100px);
+  opacity: 0;
+} to {
+  transform: translateX(0);
+  opacity: 1;
+}
+`
+
+const SubHistoryContainer = styled.div`
+  background: #111f11a1;
+  border-radius: 2px;
+  margin: 5px;
+  padding: 5px;
+  gap: 10px;
+  width: 400px;
+  font-size: 14px;
+  color: white;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-items: center;
+  h2 {
+    margin-top: 0;
+  }
+  animation: ${enterAnimation} 300ms ease;
+`
+
+function Card({
+  latitude,
+  longitude,
+  createdAt,
+  type,
+}: {
+  latitude: number
+  longitude: number
+  createdAt: number
+  type: string
+}) {
+  return (
+    <SubHistoryContainer>
+      <span>
+        <h2>Died Animal</h2>
+        {type}.
+      </span>
+      <div>
+        <span>
+          <h2>Location</h2>({latitude}, {longitude})
+        </span>
+      </div>
+      <span>
+        <h2>Created At</h2> {createdAt}
+      </span>
+    </SubHistoryContainer>
+  )
+}
+
+const CardMemo = React.memo(Card)
+
 function draw(
   ctx: CanvasRenderingContext2D,
   squareLength: number,
@@ -119,7 +181,7 @@ function Grid({
     }
   }, [JSON.stringify(sheeps), JSON.stringify(bears), JSON.stringify(wolfs)])
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     setInterval(
       () =>
         setTime(
@@ -151,7 +213,7 @@ function Grid({
         const removedAnimal = sheeps.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.unshift(removedAnimal)
+          history.unshift({...removedAnimal, id: fake.datatype.uuid()})
         }
       }
       if (i < wolfs.length) {
@@ -159,7 +221,7 @@ function Grid({
         const removedAnimal = wolfs.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.unshift(removedAnimal)
+          history.unshift({...removedAnimal, id: fake.datatype.uuid()})
         }
       }
       if (i < bears.length) {
@@ -167,7 +229,7 @@ function Grid({
         const removedAnimal = bears.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.unshift(removedAnimal)
+          history.unshift({...removedAnimal, id: fake.datatype.uuid()})
         }
       }
       if (history.length > 60) {
@@ -180,6 +242,7 @@ function Grid({
     JSON.stringify(history),
     JSON.stringify(wolfs),
   ])
+
   React.useEffect(() => {
     if (!history) return
     if (!wolfs) return
@@ -197,7 +260,7 @@ function Grid({
             console.log(`A Wolf Has Eaten a ${type}`)
             const removedAnimal = sheeps.splice(x, 1)
             wolf.location = removedAnimal[0].location
-            history.unshift(removedAnimal[0])
+            history.unshift({...removedAnimal[0], id: fake.datatype.uuid()})
           }
         }
       }
@@ -222,7 +285,7 @@ function Grid({
             console.log(`A Bear Has Eaten a ${type}`)
             const removedAnimal = wolfs.splice(x, 1)
             bear.location = removedAnimal[0].location
-            history.unshift(removedAnimal[0])
+            history.unshift({...removedAnimal[0], id: fake.datatype.uuid()})
           }
         }
       }
@@ -233,24 +296,17 @@ function Grid({
     <div>
       <h1>Current: {time}</h1>
       <Canvas width="500" height="500" ref={canvasRef} />
-      <HistoryContainer>
-        {sheeps.map((item, i) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <div key={item.createdAt * (i + 1)}>{JSON.stringify(item)}</div>
-        ))}
-      </HistoryContainer>
+
       <HistoryContainer>
         {history &&
-          history.map(({type, location, createdAt}, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <React.Fragment key={createdAt * (i + 10)}>
-              <h2>{type}</h2>
-              <div>
-                <h3>{location.latitude}</h3>
-                <h3>{location.longitude}</h3>
-              </div>
-              <span>{createdAt}</span>
-            </React.Fragment>
+          history.map(({type, location, createdAt, id}, i) => (
+            <CardMemo
+              key={id}
+              type={type}
+              latitude={location.latitude}
+              longitude={location.longitude}
+              createdAt={createdAt}
+            />
           ))}
       </HistoryContainer>
     </div>
