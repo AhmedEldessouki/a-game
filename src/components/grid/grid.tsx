@@ -151,10 +151,7 @@ function Grid({
         const removedAnimal = sheeps.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.push(removedAnimal)
-          if (history.length > 60) {
-            history.splice(0, history.length - 61)
-          }
+          history.unshift(removedAnimal)
         }
       }
       if (i < wolfs.length) {
@@ -162,10 +159,7 @@ function Grid({
         const removedAnimal = wolfs.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.push(removedAnimal)
-          if (history.length > 60) {
-            history.splice(0, history.length - 61)
-          }
+          history.unshift(removedAnimal)
         }
       }
       if (i < bears.length) {
@@ -173,11 +167,11 @@ function Grid({
         const removedAnimal = bears.shift()
         if (removedAnimal) {
           console.log(`${removedAnimal.type} Is Dead`)
-          history.push(removedAnimal)
-          if (history.length > 60) {
-            history.splice(59, history.length - 1)
-          }
+          history.unshift(removedAnimal)
         }
+      }
+      if (history.length > 60) {
+        history.splice(59, history.length - 1)
       }
     }
   }, [
