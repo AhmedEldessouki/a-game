@@ -25,8 +25,8 @@ const spawn = () => {
   } = {
     type: 'sheep',
     location: {
-      longitude: Number(faker.address.latitude(500, 0.1)),
-      latitude: Number(faker.address.longitude(500, 0.1)),
+      longitude: Number(faker.address.latitude(500, 1)),
+      latitude: Number(faker.address.longitude(500, 1)),
     },
     createdAt: Date.now(),
     color: 'white',

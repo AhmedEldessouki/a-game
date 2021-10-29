@@ -1,15 +1,49 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import {keyframes} from '@emotion/react'
-import type {AnimalsType} from './oracle'
+import {OrbitControls, Stars} from '@react-three/drei'
+import {Physics} from '@react-three/cannon'
 import {Canvas} from '@react-three/fiber'
-import TextOutlineScene from './text'
-import {Circle} from '@react-three/drei'
+import type {AnimalsType} from './oracle'
+import {Circle, Plane} from './utils'
 
 // const Canvas = styled.canvas`
 //   background: #1eff61a1;
 //   border-radius: 2px;
 // `
+
+function Field({combinedJSON}: {combinedJSON: string}) {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null)
+  const combined = React.useRef<AnimalsType | null>(JSON.parse(combinedJSON))
+
+  React.useEffect(() => {
+    console.log(combinedJSON === JSON.stringify(combined.current))
+    if (combinedJSON === JSON.stringify(combined.current)) return
+    combined.current = JSON.parse(combinedJSON) as AnimalsType
+  }, [combinedJSON])
+
+  return (
+    <Canvas ref={canvasRef} style={{width: '98vw', height: '98vh'}}>
+      {/* @ts-ignore */}
+      <OrbitControls />
+      <Stars />
+      <ambientLight intensity={0.5} />
+      <spotLight position={[10, 15, 10]} angle={0.3} />
+      <Physics>
+        <Plane color="#1eff61" />
+        {combined.current?.map(({color, id, location}) => (
+          <Circle
+            key={id + location.longitude + location.latitude}
+            color={color}
+            x={location.longitude}
+            y={location.latitude}
+          />
+        ))}
+      </Physics>
+    </Canvas>
+  )
+}
+
 const HistoryContainer = styled.div`
   background: #111f11a1;
   border-radius: 2px;
@@ -81,37 +115,6 @@ function Card({
   )
 }
 
-function draw(
-  ctx: CanvasRenderingContext2D,
-  squareLength: number,
-  latitude: number,
-  longitude: number,
-  text: string,
-  color: string,
-) {
-  let radius = 0
-  if (text === 'wolf') {
-    radius = squareLength * 0.15
-  } else if (text === 'bear') {
-    radius = squareLength * 0.2
-  }
-  ctx.save()
-  ctx.beginPath()
-
-  ctx.strokeStyle = `${color}a2`
-
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillStyle = color
-  ctx.font = `13px sans-serif`
-  ctx.fillText(text, longitude, latitude)
-  ctx.ellipse(longitude, latitude, radius, radius, Math.PI / 4, 0, 2 * Math.PI)
-  ctx.stroke()
-
-  ctx.closePath()
-  ctx.restore()
-}
-
 function FiberGrid({
   animals: sheeps,
   wolfs,
@@ -125,61 +128,11 @@ function FiberGrid({
   history: AnimalsType
   combined: AnimalsType
 }) {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null)
-
-  // React.useEffect(() => {
-  //   if (!canvasRef.current) return
-  //   const ctx = canvasRef.current.getContext('2d')
-  //   const squareLength = canvasRef.current.width
-  //   if (!ctx) return
-
-  //   ctx.clearRect(0, 0, squareLength, squareLength)
-  //   ctx.beginPath()
-  //   for (let i = 50; i < squareLength; i += 50) {
-  //     ctx.moveTo(squareLength - i, 0)
-  //     ctx.lineTo(squareLength - i, squareLength)
-  //     ctx.moveTo(0, squareLength - i)
-  //     ctx.lineTo(squareLength, squareLength - i)
-  //     ctx.strokeStyle = 'darkgray'
-  //     ctx.stroke()
-  //   }
-  //   ctx.closePath()
-
-  //   sheeps.forEach(animal =>
-  //     draw(
-  //       ctx,
-  //       squareLength,
-  //       animal.location.latitude,
-  //       animal.location.longitude,
-  //       animal.type,
-  //       animal.color,
-  //     ),
-  //   )
-  //   if (wolfs) {
-  //     wolfs.forEach(wolf =>
-  //       draw(
-  //         ctx,
-  //         squareLength,
-  //         wolf.location.latitude,
-  //         wolf.location.longitude,
-  //         wolf.type,
-  //         wolf.color,
-  //       ),
-  //     )
-  //   }
-  //   if (bears) {
-  //     bears.forEach(bear =>
-  //       draw(
-  //         ctx,
-  //         squareLength,
-  //         bear.location.latitude,
-  //         bear.location.longitude,
-  //         bear.type,
-  //         bear.color,
-  //       ),
-  //     )
-  //   }
-  // }, [JSON.stringify(sheeps), JSON.stringify(bears), JSON.stringify(wolfs)])
+  const [time, setTime] = React.useState(`${new Date()
+    .getHours()
+    .toString()
+    .padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}:
+      ${new Date().getSeconds().toString().padStart(2, '0')}`)
 
   React.useEffect(() => {
     if (!history) return
@@ -275,18 +228,39 @@ function FiberGrid({
       }
     }
   }, [JSON.stringify(bears), JSON.stringify(history), JSON.stringify(wolfs)])
+  React.useEffect(() => {
+    setInterval(
+      () =>
+        setTime(
+          () => `${new Date()
+            .getHours()
+            .toString()
+            .padStart(2, '0')}:${new Date()
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}:
+            ${`${new Date().getSeconds()}`.padStart(2, '0')}`,
+        ),
+      1000,
+    )
+  }, [])
 
   return (
-    <Canvas>
-      <color attach="background" args={['#1eff61']} />
-      <pointLight position={[-100, -100, -100]} intensity={10} />
-      <pointLight position={[100, 10, -50]} intensity={20} />
-      <pointLight position={[10, 10, 10]} />
-      <mesh>
-        <sphereBufferGeometry />
-        <meshStandardMaterial color="hotpink" />
-      </mesh>
-    </Canvas>
+    <div>
+      <Field combinedJSON={JSON.stringify([...sheeps, ...wolfs, ...bears])} />
+      <HistoryContainer>
+        <h2>Spawned Animals</h2>
+        {combined.map(({type, location, createdAt, id}, i) => (
+          <Card
+            key={id}
+            type={type}
+            latitude={location.latitude}
+            longitude={location.longitude}
+            createdAt={createdAt}
+          />
+        ))}
+      </HistoryContainer>
+    </div>
   )
 }
 
