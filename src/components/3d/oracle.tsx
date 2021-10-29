@@ -1,6 +1,6 @@
 import React from 'react'
 import faker from 'faker'
-import CssGrid from './grid'
+import FiberGrid from './grid'
 
 type SpawnAbleAnimals = 'sheep' | 'wolf' | 'bear'
 type AnimalsType = {
@@ -44,7 +44,7 @@ const spawn = () => {
   return animal
 }
 
-function CssOracle() {
+function FiberOracle() {
   const historyRef = React.useRef<AnimalsType>([])
   const sheepsRef = React.useRef<AnimalsType>([])
   const redZonesRef = React.useRef<AnimalsType>([])
@@ -78,7 +78,7 @@ function CssOracle() {
           .padStart(2, '0')}:
   ${new Date().getSeconds().toString().padStart(2, '0')}`}
       </h1>
-      <CssGrid
+      <FiberGrid
         animals={sheepsRef.current}
         wolfs={redZonesRef.current}
         bears={blueZonesRef.current}
@@ -89,5 +89,5 @@ function CssOracle() {
   )
 }
 
-export default CssOracle
+export default FiberOracle
 export type {AnimalsType}

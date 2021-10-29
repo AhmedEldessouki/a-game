@@ -2,11 +2,14 @@ import React from 'react'
 import styled from '@emotion/styled'
 import {keyframes} from '@emotion/react'
 import type {AnimalsType} from './oracle'
+import {Canvas} from '@react-three/fiber'
+import TextOutlineScene from './text'
+import {Circle} from '@react-three/drei'
 
-const Canvas = styled.canvas`
-  background: #1eff61a1;
-  border-radius: 2px;
-`
+// const Canvas = styled.canvas`
+//   background: #1eff61a1;
+//   border-radius: 2px;
+// `
 const HistoryContainer = styled.div`
   background: #111f11a1;
   border-radius: 2px;
@@ -109,7 +112,7 @@ function draw(
   ctx.restore()
 }
 
-function CssGrid({
+function FiberGrid({
   animals: sheeps,
   wolfs,
   bears,
@@ -122,84 +125,61 @@ function CssGrid({
   history: AnimalsType
   combined: AnimalsType
 }) {
-  const [time, setTime] = React.useState(`${new Date()
-    .getHours()
-    .toString()
-    .padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}:
-      ${new Date().getSeconds().toString().padStart(2, '0')}`)
-
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
 
-  React.useEffect(() => {
-    if (!canvasRef.current) return
-    const ctx = canvasRef.current.getContext('2d')
-    const squareLength = canvasRef.current.width
-    if (!ctx) return
+  // React.useEffect(() => {
+  //   if (!canvasRef.current) return
+  //   const ctx = canvasRef.current.getContext('2d')
+  //   const squareLength = canvasRef.current.width
+  //   if (!ctx) return
 
-    ctx.clearRect(0, 0, squareLength, squareLength)
-    ctx.beginPath()
-    for (let i = 50; i < squareLength; i += 50) {
-      ctx.moveTo(squareLength - i, 0)
-      ctx.lineTo(squareLength - i, squareLength)
-      ctx.moveTo(0, squareLength - i)
-      ctx.lineTo(squareLength, squareLength - i)
-      ctx.strokeStyle = 'darkgray'
-      ctx.stroke()
-    }
-    ctx.closePath()
+  //   ctx.clearRect(0, 0, squareLength, squareLength)
+  //   ctx.beginPath()
+  //   for (let i = 50; i < squareLength; i += 50) {
+  //     ctx.moveTo(squareLength - i, 0)
+  //     ctx.lineTo(squareLength - i, squareLength)
+  //     ctx.moveTo(0, squareLength - i)
+  //     ctx.lineTo(squareLength, squareLength - i)
+  //     ctx.strokeStyle = 'darkgray'
+  //     ctx.stroke()
+  //   }
+  //   ctx.closePath()
 
-    sheeps.forEach(animal =>
-      draw(
-        ctx,
-        squareLength,
-        animal.location.latitude,
-        animal.location.longitude,
-        animal.type,
-        animal.color,
-      ),
-    )
-    if (wolfs) {
-      wolfs.forEach(wolf =>
-        draw(
-          ctx,
-          squareLength,
-          wolf.location.latitude,
-          wolf.location.longitude,
-          wolf.type,
-          wolf.color,
-        ),
-      )
-    }
-    if (bears) {
-      bears.forEach(bear =>
-        draw(
-          ctx,
-          squareLength,
-          bear.location.latitude,
-          bear.location.longitude,
-          bear.type,
-          bear.color,
-        ),
-      )
-    }
-  }, [JSON.stringify(sheeps), JSON.stringify(bears), JSON.stringify(wolfs)])
-
-  React.useEffect(() => {
-    setInterval(
-      () =>
-        setTime(
-          () => `${new Date()
-            .getHours()
-            .toString()
-            .padStart(2, '0')}:${new Date()
-            .getMinutes()
-            .toString()
-            .padStart(2, '0')}:
-            ${`${new Date().getSeconds()}`.padStart(2, '0')}`,
-        ),
-      1000,
-    )
-  }, [])
+  //   sheeps.forEach(animal =>
+  //     draw(
+  //       ctx,
+  //       squareLength,
+  //       animal.location.latitude,
+  //       animal.location.longitude,
+  //       animal.type,
+  //       animal.color,
+  //     ),
+  //   )
+  //   if (wolfs) {
+  //     wolfs.forEach(wolf =>
+  //       draw(
+  //         ctx,
+  //         squareLength,
+  //         wolf.location.latitude,
+  //         wolf.location.longitude,
+  //         wolf.type,
+  //         wolf.color,
+  //       ),
+  //     )
+  //   }
+  //   if (bears) {
+  //     bears.forEach(bear =>
+  //       draw(
+  //         ctx,
+  //         squareLength,
+  //         bear.location.latitude,
+  //         bear.location.longitude,
+  //         bear.type,
+  //         bear.color,
+  //       ),
+  //     )
+  //   }
+  // }, [JSON.stringify(sheeps), JSON.stringify(bears), JSON.stringify(wolfs)])
 
   React.useEffect(() => {
     if (!history) return
@@ -297,35 +277,17 @@ function CssGrid({
   }, [JSON.stringify(bears), JSON.stringify(history), JSON.stringify(wolfs)])
 
   return (
-    <div>
-      <h1>Current: {time}</h1>
-      <Canvas width="500" height="500" ref={canvasRef} />
-      <HistoryContainer>
-        <h2>Died Animals</h2>
-        {history.map(({type, location, createdAt, id}, i) => (
-          <Card
-            key={id}
-            type={type}
-            latitude={location.latitude}
-            longitude={location.longitude}
-            createdAt={createdAt}
-          />
-        ))}
-      </HistoryContainer>
-      <HistoryContainer>
-        <h2>Spawned Animals</h2>
-        {combined.map(({type, location, createdAt, id}, i) => (
-          <Card
-            key={id}
-            type={type}
-            latitude={location.latitude}
-            longitude={location.longitude}
-            createdAt={createdAt}
-          />
-        ))}
-      </HistoryContainer>
-    </div>
+    <Canvas>
+      <color attach="background" args={['#1eff61']} />
+      <pointLight position={[-100, -100, -100]} intensity={10} />
+      <pointLight position={[100, 10, -50]} intensity={20} />
+      <pointLight position={[10, 10, 10]} />
+      <mesh>
+        <sphereBufferGeometry />
+        <meshStandardMaterial color="hotpink" />
+      </mesh>
+    </Canvas>
   )
 }
 
-export default CssGrid
+export default FiberGrid
