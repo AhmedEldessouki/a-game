@@ -1,46 +1,25 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import {keyframes} from '@emotion/react'
 import {OrbitControls, Stars} from '@react-three/drei'
 import {Physics} from '@react-three/cannon'
 import {Canvas} from '@react-three/fiber'
-import type {AnimalsType} from './oracle'
 import {Circle, Plane} from './utils'
+import Card from '../../card'
+import type {AnimalsType} from '../../../types/animals'
 
-// const Canvas = styled.canvas`
-//   background: #1eff61a1;
-//   border-radius: 2px;
-// `
-
-function Field({combinedJSON}: {combinedJSON: string}) {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null)
-  const combined = React.useRef<AnimalsType | null>(JSON.parse(combinedJSON))
-
-  React.useEffect(() => {
-    console.log(combinedJSON === JSON.stringify(combined.current))
-    if (combinedJSON === JSON.stringify(combined.current)) return
-    combined.current = JSON.parse(combinedJSON) as AnimalsType
-  }, [combinedJSON])
-
+function Field({animals}: {animals: AnimalsType}) {
   return (
-    <Canvas ref={canvasRef} style={{width: '98vw', height: '98vh'}}>
-      {/* @ts-ignore */}
-      <OrbitControls />
-      <Stars />
-      <ambientLight intensity={0.5} />
-      <spotLight position={[10, 15, 10]} angle={0.3} />
-      <Physics>
-        <Plane color="#1eff61" />
-        {combined.current?.map(({color, id, location}) => (
-          <Circle
-            key={id + location.longitude + location.latitude}
-            color={color}
-            x={location.longitude}
-            y={location.latitude}
-          />
-        ))}
-      </Physics>
-    </Canvas>
+    <>
+      {animals.map(({color, id, location}) => (
+        <Circle
+          key={id + location.longitude + location.latitude}
+          // key={id}
+          color={color}
+          x={location.longitude}
+          y={location.latitude}
+        />
+      ))}
+    </>
   )
 }
 
@@ -57,72 +36,14 @@ const HistoryContainer = styled.div`
   overflow: auto;
 `
 
-const enterAnimation = keyframes`
-from {
-  transform: translateX(-100px);
-  opacity: 0;
-} to {
-  transform: translateX(0);
-  opacity: 1;
-}
-`
-
-const SubHistoryContainer = styled.div`
-  background: #111f11a1;
-  border-radius: 2px;
-  margin: 5px;
-  padding: 5px;
-  gap: 10px;
-  width: 400px;
-  font-size: 14px;
-  color: white;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  align-items: center;
-  h3 {
-    margin-top: 0;
-  }
-  animation: ${enterAnimation} 300ms ease;
-`
-
-function Card({
-  latitude,
-  longitude,
-  createdAt,
-  type,
-}: {
-  latitude: number
-  longitude: number
-  createdAt: number
-  type: string
-}) {
-  return (
-    <SubHistoryContainer>
-      <span>
-        <h3> Animal</h3>
-        {type}
-      </span>
-      <div>
-        <span>
-          <h3>Location</h3>({latitude}, {longitude})
-        </span>
-      </div>
-      <span>
-        <h3>Created At</h3> {createdAt}
-      </span>
-    </SubHistoryContainer>
-  )
-}
-
 function FiberGrid({
-  animals: sheeps,
+  sheeps,
   wolfs,
   bears,
   history,
   combined,
 }: {
-  animals: AnimalsType
+  sheeps: AnimalsType
   wolfs: AnimalsType
   bears: AnimalsType
   history: AnimalsType
@@ -132,7 +53,8 @@ function FiberGrid({
     .getHours()
     .toString()
     .padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}:
-      ${new Date().getSeconds().toString().padStart(2, '0')}`)
+        ${`${new Date().getSeconds()}`.padStart(2, '0')}`)
+  const canvasRef = React.useRef<HTMLCanvasElement>(null)
 
   React.useEffect(() => {
     if (!history) return
@@ -196,7 +118,7 @@ function FiberGrid({
         ) {
           const removedAnimal = sheeps.splice(x, 1)
           wolf.location = removedAnimal[0].location
-          history.unshift({...removedAnimal[0]})
+          history.unshift(removedAnimal[0])
           console.log(`A Wolf Has Eaten a ${type}`)
           break
         }
@@ -221,13 +143,14 @@ function FiberGrid({
         ) {
           const removedAnimal = wolfs.splice(x, 1)
           bear.location = removedAnimal[0].location
-          history.unshift({...removedAnimal[0]})
+          history.unshift(removedAnimal[0])
           console.log(`A Bear Has Eaten a ${type}`)
           break
         }
       }
     }
   }, [JSON.stringify(bears), JSON.stringify(history), JSON.stringify(wolfs)])
+
   React.useEffect(() => {
     setInterval(
       () =>
@@ -247,7 +170,43 @@ function FiberGrid({
 
   return (
     <div>
-      <Field combinedJSON={JSON.stringify([...sheeps, ...wolfs, ...bears])} />
+      <Canvas ref={canvasRef} style={{width: '98vw', height: '98vh'}}>
+        {/* @ts-ignore */}
+        <OrbitControls />
+        <Stars />
+        <ambientLight intensity={0.5} />
+        <spotLight position={[10, 15, 10]} angle={0.3} />
+        <Physics>
+          <Plane color="#1eff61" />
+          <Field animals={sheeps} />
+          {/* {sheeps.map(({color, id, location}) => (
+            <Circle
+              key={id + location.longitude + location.latitude}
+              color={color}
+              x={location.longitude}
+              y={location.latitude}
+            />
+          ))} */}
+          <Field animals={wolfs} />
+          {/* {wolfs.map(({color, id, location}) => (
+            <Circle
+              key={id + location.longitude + location.latitude}
+              color={color}
+              x={location.longitude}
+              y={location.latitude}
+            />
+          ))} */}
+          <Field animals={bears} />
+          {/* {bears.map(({color, id, location}) => (
+            <Circle
+              key={id + location.longitude + location.latitude}
+              color={color}
+              x={location.longitude}
+              y={location.latitude}
+            />
+          ))} */}
+        </Physics>
+      </Canvas>
       <HistoryContainer>
         <h2>Spawned Animals</h2>
         {combined.map(({type, location, createdAt, id}, i) => (
