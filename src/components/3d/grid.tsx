@@ -1,12 +1,27 @@
 import React from 'react'
 import styled from '@emotion/styled'
+import {OrbitControls, Stars} from '@react-three/drei'
+import {Physics} from '@react-three/cannon'
+import {Canvas} from '@react-three/fiber'
+import {Circle, Plane} from './utils'
 import Card from '../../card'
 import type {AnimalsType} from '../../../types/animals'
 
-const Canvas = styled.canvas`
-  background: #1eff61a1;
-  border-radius: 2px;
-`
+function Field({animals}: {animals: AnimalsType}) {
+  return (
+    <>
+      {animals.map(({color, id, location}) => (
+        <Circle
+          key={id + location.longitude + location.latitude}
+          color={color}
+          x={location.longitude}
+          y={location.latitude}
+        />
+      ))}
+    </>
+  )
+}
+
 const HistoryContainer = styled.div`
   background: #111f11a1;
   border-radius: 2px;
@@ -20,45 +35,14 @@ const HistoryContainer = styled.div`
   overflow: auto;
 `
 
-function draw(
-  ctx: CanvasRenderingContext2D,
-  squareLength: number,
-  latitude: number,
-  longitude: number,
-  text: string,
-  color: string,
-) {
-  let radius = 0
-  if (text === 'wolf') {
-    radius = squareLength * 0.15
-  } else if (text === 'bear') {
-    radius = squareLength * 0.2
-  }
-  ctx.save()
-  ctx.beginPath()
-
-  ctx.strokeStyle = `${color}a2`
-
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillStyle = color
-  ctx.font = `13px sans-serif`
-  ctx.fillText(text, longitude, latitude)
-  ctx.ellipse(longitude, latitude, radius, radius, Math.PI / 4, 0, 2 * Math.PI)
-  ctx.stroke()
-
-  ctx.closePath()
-  ctx.restore()
-}
-
-function CssGrid({
-  animals: sheeps,
+function FiberGrid({
+  sheeps,
   wolfs,
   bears,
   history,
   combined,
 }: {
-  animals: AnimalsType
+  sheeps: AnimalsType
   wolfs: AnimalsType
   bears: AnimalsType
   history: AnimalsType
@@ -68,87 +52,10 @@ function CssGrid({
     .getHours()
     .toString()
     .padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}:
-      ${new Date().getSeconds().toString().padStart(2, '0')}`)
-
+        ${`${new Date().getSeconds()}`.padStart(2, '0')}`)
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
 
   React.useEffect(() => {
-    if (!canvasRef.current) return
-    const ctx = canvasRef.current.getContext('2d')
-    const squareLength = canvasRef.current.width
-    if (!ctx) return
-
-    ctx.clearRect(0, 0, squareLength, squareLength)
-    ctx.beginPath()
-    for (let i = 50; i < squareLength; i += 50) {
-      ctx.moveTo(squareLength - i, 0)
-      ctx.lineTo(squareLength - i, squareLength)
-      ctx.moveTo(0, squareLength - i)
-      ctx.lineTo(squareLength, squareLength - i)
-      ctx.strokeStyle = 'darkgray'
-      ctx.stroke()
-    }
-    ctx.closePath()
-
-    sheeps.forEach(animal =>
-      draw(
-        ctx,
-        squareLength,
-        animal.location.latitude,
-        animal.location.longitude,
-        animal.type,
-        animal.color,
-      ),
-    )
-    if (wolfs) {
-      wolfs.forEach(wolf =>
-        draw(
-          ctx,
-          squareLength,
-          wolf.location.latitude,
-          wolf.location.longitude,
-          wolf.type,
-          wolf.color,
-        ),
-      )
-    }
-    if (bears) {
-      bears.forEach(bear =>
-        draw(
-          ctx,
-          squareLength,
-          bear.location.latitude,
-          bear.location.longitude,
-          bear.type,
-          bear.color,
-        ),
-      )
-    }
-  }, [JSON.stringify(sheeps), JSON.stringify(bears), JSON.stringify(wolfs)])
-
-  React.useEffect(() => {
-    setInterval(
-      () =>
-        setTime(
-          () => `${new Date()
-            .getHours()
-            .toString()
-            .padStart(2, '0')}:${new Date()
-            .getMinutes()
-            .toString()
-            .padStart(2, '0')}:
-            ${`${new Date().getSeconds()}`.padStart(2, '0')}`,
-        ),
-      1000,
-    )
-  }, [])
-
-  React.useEffect(() => {
-    if (!history) return
-    if (!bears) return
-    if (!wolfs) return
-    if (sheeps.length <= 0) return
-
     for (
       let i = 0;
       i < (sheeps.length || bears.length || wolfs.length);
@@ -190,9 +97,6 @@ function CssGrid({
   ])
 
   React.useEffect(() => {
-    if (!history) return
-    if (!wolfs) return
-
     for (let i = 0; i < wolfs.length; i += 1) {
       const wolf = wolfs[i]
       for (let x = 0; x < sheeps.length; x += 1) {
@@ -205,7 +109,7 @@ function CssGrid({
         ) {
           const removedAnimal = sheeps.splice(x, 1)
           wolf.location = removedAnimal[0].location
-          history.unshift({...removedAnimal[0]})
+          history.unshift(removedAnimal[0])
           console.log(`A Wolf Has Eaten a ${type}`)
           break
         }
@@ -214,10 +118,6 @@ function CssGrid({
   }, [JSON.stringify(sheeps), JSON.stringify(history), JSON.stringify(wolfs)])
 
   React.useEffect(() => {
-    if (!bears) return
-    if (!wolfs) return
-    if (!history) return
-
     for (let i = 0; i < bears.length; i += 1) {
       const bear = bears[i]
       for (let x = 0; x < wolfs.length; x += 1) {
@@ -230,7 +130,7 @@ function CssGrid({
         ) {
           const removedAnimal = wolfs.splice(x, 1)
           bear.location = removedAnimal[0].location
-          history.unshift({...removedAnimal[0]})
+          history.unshift(removedAnimal[0])
           console.log(`A Bear Has Eaten a ${type}`)
           break
         }
@@ -238,22 +138,38 @@ function CssGrid({
     }
   }, [JSON.stringify(bears), JSON.stringify(history), JSON.stringify(wolfs)])
 
+  React.useEffect(() => {
+    setInterval(
+      () =>
+        setTime(
+          () => `${new Date()
+            .getHours()
+            .toString()
+            .padStart(2, '0')}:${new Date()
+            .getMinutes()
+            .toString()
+            .padStart(2, '0')}:
+            ${`${new Date().getSeconds()}`.padStart(2, '0')}`,
+        ),
+      1000,
+    )
+  }, [])
+
   return (
     <div>
-      <h1>Current: {time}</h1>
-      <Canvas width="500" height="500" ref={canvasRef} />
-      <HistoryContainer>
-        <h2>Died Animals</h2>
-        {history.map(({type, location, createdAt, id}, i) => (
-          <Card
-            key={id}
-            type={type}
-            latitude={location.latitude}
-            longitude={location.longitude}
-            createdAt={createdAt}
-          />
-        ))}
-      </HistoryContainer>
+      <Canvas ref={canvasRef} style={{width: '98vw', height: '98vh'}}>
+        {/* @ts-ignore */}
+        <OrbitControls />
+        <Stars />
+        <ambientLight intensity={0.5} />
+        <spotLight position={[10, 15, 10]} angle={0.3} />
+        <Physics>
+          <Plane color="#1eff61" />
+          <Field animals={sheeps} />
+          <Field animals={wolfs} />
+          <Field animals={bears} />
+        </Physics>
+      </Canvas>
       <HistoryContainer>
         <h2>Spawned Animals</h2>
         {combined.map(({type, location, createdAt, id}, i) => (
@@ -270,4 +186,4 @@ function CssGrid({
   )
 }
 
-export default CssGrid
+export default FiberGrid
