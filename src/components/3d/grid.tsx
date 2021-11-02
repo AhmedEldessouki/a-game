@@ -57,11 +57,6 @@ function FiberGrid({
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
 
   React.useEffect(() => {
-    if (!history) return
-    if (!bears) return
-    if (!wolfs) return
-    if (sheeps.length <= 0) return
-
     for (
       let i = 0;
       i < (sheeps.length || bears.length || wolfs.length);
@@ -103,9 +98,6 @@ function FiberGrid({
   ])
 
   React.useEffect(() => {
-    if (!history) return
-    if (!wolfs) return
-
     for (let i = 0; i < wolfs.length; i += 1) {
       const wolf = wolfs[i]
       for (let x = 0; x < sheeps.length; x += 1) {
@@ -127,10 +119,6 @@ function FiberGrid({
   }, [JSON.stringify(sheeps), JSON.stringify(history), JSON.stringify(wolfs)])
 
   React.useEffect(() => {
-    if (!bears) return
-    if (!wolfs) return
-    if (!history) return
-
     for (let i = 0; i < bears.length; i += 1) {
       const bear = bears[i]
       for (let x = 0; x < wolfs.length; x += 1) {
@@ -179,32 +167,8 @@ function FiberGrid({
         <Physics>
           <Plane color="#1eff61" />
           <Field animals={sheeps} />
-          {/* {sheeps.map(({color, id, location}) => (
-            <Circle
-              key={id + location.longitude + location.latitude}
-              color={color}
-              x={location.longitude}
-              y={location.latitude}
-            />
-          ))} */}
           <Field animals={wolfs} />
-          {/* {wolfs.map(({color, id, location}) => (
-            <Circle
-              key={id + location.longitude + location.latitude}
-              color={color}
-              x={location.longitude}
-              y={location.latitude}
-            />
-          ))} */}
           <Field animals={bears} />
-          {/* {bears.map(({color, id, location}) => (
-            <Circle
-              key={id + location.longitude + location.latitude}
-              color={color}
-              x={location.longitude}
-              y={location.latitude}
-            />
-          ))} */}
         </Physics>
       </Canvas>
       <HistoryContainer>
