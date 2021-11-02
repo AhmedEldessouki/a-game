@@ -13,7 +13,6 @@ function Field({animals}: {animals: AnimalsType}) {
       {animals.map(({color, id, location}) => (
         <Circle
           key={id + location.longitude + location.latitude}
-          // key={id}
           color={color}
           x={location.longitude}
           y={location.latitude}
